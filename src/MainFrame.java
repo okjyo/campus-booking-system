@@ -181,7 +181,7 @@ public class MainFrame extends JFrame {
             }
             try {
                 int id = Integer.parseInt(txtUpdateID.getText());
-                bookingManager.updateBooking(id,
+                boolean updated = bookingManager.updateBooking(id,
                     txtUpdFacility.getText(),
                     txtUpdRoom.getText(),
                     txtUpdDate.getText(),
@@ -189,7 +189,12 @@ public class MainFrame extends JFrame {
                     txtUpdPurpose.getText(),
                     cmbUpdStatus.getSelectedItem().toString()
                 );
+            if (updated) {
                 JOptionPane.showMessageDialog(this, "Booking updated successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Booking ID " + id + " not found!",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Booking ID must be a number!",
                     "Validation Error", JOptionPane.ERROR_MESSAGE);
@@ -224,9 +229,14 @@ public class MainFrame extends JFrame {
                     "Are you sure you want to delete booking ID " + id + "?",
                     "Confirm Delete", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    bookingManager.deleteBooking(id);
-                    JOptionPane.showMessageDialog(this, "Booking deleted successfully!");
-                    txtDeleteID.setText("");
+                    boolean deleted = bookingManager.deleteBooking(id);
+                    if (deleted) {
+                        JOptionPane.showMessageDialog(this, "Booking deleted successfully!");
+                        txtDeleteID.setText("");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Booking ID " + id + " not found!",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Booking ID must be a number!",

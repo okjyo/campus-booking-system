@@ -51,35 +51,49 @@ public class BookingManager {
     }
 
     // Update booking
-    public void updateBooking(int bookingID, String facilityName, String roomNumber,
-                               String bookingDate, String timeSlot, String purpose, String status) {
-        String sql = "UPDATE bookings SET facilityName=?, roomNumber=?, bookingDate=?, timeSlot=?, purpose=?, status=? WHERE bookingID=?";
+    public boolean updateBooking(int bookingID, String facilityName, String roomNumber,
+                           String bookingDate, String timeSlot, String purpose, String status) {
+    // Only update status if other fields are empty
+        String sql;
+        if (facilityName.isEmpty() && roomNumber.isEmpty() && timeSlot.isEmpty() && purpose.isEmpty()) {
+            sql = "UPDATE bookings SET status=? WHERE bookingID=?";
+        } else {
+            sql = "UPDATE bookings SET facilityName=?, roomNumber=?, bookingDate=?, timeSlot=?, purpose=?, status=? WHERE bookingID=?";
+        }
+
         try (Connection conn = DatabaseConnection.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, facilityName);
-            stmt.setString(2, roomNumber);
-            stmt.setString(3, bookingDate);
-            stmt.setString(4, timeSlot);
-            stmt.setString(5, purpose);
-            stmt.setString(6, status);
-            stmt.setInt(7, bookingID);
-            stmt.executeUpdate();
-            System.out.println("Booking updated successfully!");
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            if (facilityName.isEmpty() && roomNumber.isEmpty() && timeSlot.isEmpty() && purpose.isEmpty()) {
+                stmt.setString(1, status);
+                stmt.setInt(2, bookingID);
+            } else {
+                stmt.setString(1, facilityName);
+                stmt.setString(2, roomNumber);
+                stmt.setString(3, bookingDate);
+                stmt.setString(4, timeSlot);
+                stmt.setString(5, purpose);
+                stmt.setString(6, status);
+                stmt.setInt(7, bookingID);
+            }
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             System.out.println("Error updating booking: " + e.getMessage());
+            return false;
         }
     }
 
     // Delete booking
-    public void deleteBooking(int bookingID) {
+    public boolean deleteBooking(int bookingID) {
         String sql = "DELETE FROM bookings WHERE bookingID=?";
         try (Connection conn = DatabaseConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, bookingID);
-            stmt.executeUpdate();
-            System.out.println("Booking deleted successfully!");
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             System.out.println("Error deleting booking: " + e.getMessage());
+            return false;
         }
     }
 
