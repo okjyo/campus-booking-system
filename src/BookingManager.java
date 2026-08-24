@@ -4,8 +4,7 @@ import java.util.ArrayList;
 public class BookingManager {
     private ArrayList<Booking> bookings = new ArrayList<>();
 
-    // Add new booking
-    public void addBooking(Booking booking) {
+    public boolean addBooking(Booking booking) {
         String sql = "INSERT INTO bookings (studentName, studentID, facilityName, roomNumber, bookingDate, timeSlot, purpose, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -18,13 +17,13 @@ public class BookingManager {
             stmt.setString(7, booking.getPurpose());
             stmt.setString(8, booking.getStatus());
             stmt.executeUpdate();
-            System.out.println("Booking added successfully!");
+            return true;
         } catch (SQLException e) {
             System.out.println("Error adding booking: " + e.getMessage());
+            return false;
         }
     }
 
-    // Get all bookings
     public ArrayList<Booking> getAllBookings() {
         bookings.clear();
         String sql = "SELECT * FROM bookings";
@@ -50,31 +49,27 @@ public class BookingManager {
         return bookings;
     }
 
-    // Update booking
-    public boolean updateBooking(int bookingID, String facilityName, String roomNumber,
-                           String bookingDate, String timeSlot, String purpose, String status) {
-    // Only update status if other fields are empty
-        String sql;
-        if (facilityName.isEmpty() && roomNumber.isEmpty() && timeSlot.isEmpty() && purpose.isEmpty()) {
-            sql = "UPDATE bookings SET status=? WHERE bookingID=?";
-        } else {
-            sql = "UPDATE bookings SET facilityName=?, roomNumber=?, bookingDate=?, timeSlot=?, purpose=?, status=? WHERE bookingID=?";
+    public boolean updateBooking(int bookingID, String facilityName, String roomNumber,String bookingDate, String timeSlot, String purpose, String status) {
+        StringBuilder sql = new StringBuilder("UPDATE bookings SET ");
+        ArrayList<String> values = new ArrayList<>();
+
+        if (!facilityName.isEmpty()) { sql.append("facilityName=?, "); values.add(facilityName); }
+        if (!roomNumber.isEmpty())   { sql.append("roomNumber=?, ");   values.add(roomNumber); }
+        if (!bookingDate.isEmpty() && !bookingDate.equals("YYYY-MM-DD")) {
+            sql.append("bookingDate=?, ");
+            values.add(bookingDate);
         }
+        if (!timeSlot.isEmpty())     { sql.append("timeSlot=?, ");     values.add(timeSlot); }
+        if (!purpose.isEmpty())      { sql.append("purpose=?, ");      values.add(purpose); }
+        sql.append("status=? "); 
+        values.add(status);
+        sql.append("WHERE bookingID=?");
 
         try (Connection conn = DatabaseConnection.connect();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
-            if (facilityName.isEmpty() && roomNumber.isEmpty() && timeSlot.isEmpty() && purpose.isEmpty()) {
-                stmt.setString(1, status);
-                stmt.setInt(2, bookingID);
-            } else {
-                stmt.setString(1, facilityName);
-                stmt.setString(2, roomNumber);
-                stmt.setString(3, bookingDate);
-                stmt.setString(4, timeSlot);
-                stmt.setString(5, purpose);
-                stmt.setString(6, status);
-                stmt.setInt(7, bookingID);
-            }
+            PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int i = 1;
+            for (String v : values) stmt.setString(i++, v);
+            stmt.setInt(i, bookingID);
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
@@ -83,7 +78,6 @@ public class BookingManager {
         }
     }
 
-    // Delete booking
     public boolean deleteBooking(int bookingID) {
         String sql = "DELETE FROM bookings WHERE bookingID=?";
         try (Connection conn = DatabaseConnection.connect();
@@ -97,7 +91,6 @@ public class BookingManager {
         }
     }
 
-    // Search by facility name
     public ArrayList<Booking> searchByFacility(String facilityName) {
         bookings.clear();
         String sql = "SELECT * FROM bookings WHERE facilityName LIKE ?";
@@ -124,7 +117,6 @@ public class BookingManager {
         return bookings;
     }
 
-    // Search by date
     public ArrayList<Booking> searchByDate(String date) {
         bookings.clear();
         String sql = "SELECT * FROM bookings WHERE bookingDate = ?";
@@ -151,7 +143,6 @@ public class BookingManager {
         return bookings;
     }
 
-    // Sort by date
     public ArrayList<Booking> sortByDate() {
         bookings.clear();
         String sql = "SELECT * FROM bookings ORDER BY bookingDate ASC";
@@ -177,7 +168,6 @@ public class BookingManager {
         return bookings;
     }
 
-    // Sort by status
     public ArrayList<Booking> sortByStatus() {
         bookings.clear();
         String sql = "SELECT * FROM bookings ORDER BY status ASC";

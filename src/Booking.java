@@ -9,7 +9,6 @@ public class Booking {
     private String purpose;
     private String status;
 
-    // Constructor
     public Booking(int bookingID, String studentName, String studentID,
                    String facilityName, String roomNumber, String bookingDate,
                    String timeSlot, String purpose, String status) {
@@ -24,7 +23,6 @@ public class Booking {
         this.status = status;
     }
 
-    // Getters
     public int getBookingID() { return bookingID; }
     public String getStudentName() { return studentName; }
     public String getStudentID() { return studentID; }
@@ -35,7 +33,6 @@ public class Booking {
     public String getPurpose() { return purpose; }
     public String getStatus() { return status; }
 
-    // Setters
     public void setBookingID(int bookingID) { this.bookingID = bookingID; }
     public void setStudentName(String studentName) { this.studentName = studentName; }
     public void setStudentID(String studentID) { this.studentID = studentID; }
@@ -46,7 +43,6 @@ public class Booking {
     public void setPurpose(String purpose) { this.purpose = purpose; }
     public void setStatus(String status) { this.status = status; }
 
-    // toString - useful for debugging
     @Override
     public String toString() {
         return "Booking[ID=" + bookingID + ", Student=" + studentName +

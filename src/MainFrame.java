@@ -8,7 +8,6 @@ public class MainFrame extends JFrame {
     private DefaultTableModel tableModel;
     private JTable bookingTable;
 
-    // Form fields
     private JTextField txtStudentName, txtStudentID, txtFacilityName;
     private JTextField txtRoomNumber, txtBookingDate, txtTimeSlot, txtPurpose;
     private JComboBox<String> cmbStatus;
@@ -28,7 +27,6 @@ public class MainFrame extends JFrame {
         tabbedPane.addTab("View All Bookings", createViewPanel());
         tabbedPane.addTab("Add Booking", createAddPanel());
 
-        // Only admin can see Update and Delete tabs
         if (role.equals("admin")) {
             tabbedPane.addTab("Update Booking", createUpdatePanel());
             tabbedPane.addTab("Delete Booking", createDeletePanel());
@@ -55,7 +53,6 @@ public class MainFrame extends JFrame {
         setVisible(true);
 }
 
-    // ── VIEW ALL BOOKINGS TAB ──
     private JPanel createViewPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -75,7 +72,6 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ── ADD BOOKING TAB ──
     private JPanel createAddPanel() {
         JPanel panel = new JPanel(new GridLayout(10, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
@@ -108,15 +104,21 @@ public class MainFrame extends JFrame {
         panel.add(cmbStatus);
 
         JButton btnAdd = new JButton("Add Booking");
+
         btnAdd.addActionListener(e -> {
-            // Input validation
             if (txtStudentName.getText().isEmpty() || txtStudentID.getText().isEmpty() ||
                 txtFacilityName.getText().isEmpty() || txtRoomNumber.getText().isEmpty() ||
-                txtBookingDate.getText().isEmpty() || txtTimeSlot.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in all required fields!", 
-                    "Validation Error", JOptionPane.ERROR_MESSAGE);
-                return;
+                txtBookingDate.getText().isEmpty() || txtBookingDate.getText().equals("YYYY-MM-DD") ||
+                txtTimeSlot.getText().isEmpty() || txtTimeSlot.getText().equals("e.g. 9:00AM - 11:00AM")) {
+                JOptionPane.showMessageDialog(this, "Please fill in all required fields with valid values!",
+                "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
             }
+            if (!txtBookingDate.getText().matches("\\d{4}-\\d{2}-\\d{2}")) {
+                JOptionPane.showMessageDialog(this, "Booking Date must be in YYYY-MM-DD format!",
+                "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
             try {
                 Booking booking = new Booking(0,
@@ -129,9 +131,15 @@ public class MainFrame extends JFrame {
                     txtPurpose.getText(),
                     cmbStatus.getSelectedItem().toString()
                 );
-                bookingManager.addBooking(booking);
-                JOptionPane.showMessageDialog(this, "Booking added successfully!");
-                clearAddFields();
+                boolean success = bookingManager.addBooking(booking);
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "Booking added successfully!");
+                    clearAddFields();
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                    "Failed to add booking. Please check your database connection and try again.",
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+                }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -143,7 +151,6 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ── UPDATE BOOKING TAB ──
     private JPanel createUpdatePanel() {
         JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
@@ -206,7 +213,6 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ── DELETE BOOKING TAB ──
     private JPanel createDeletePanel() {
         JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
@@ -249,7 +255,6 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ── SEARCH & SORT TAB ──
     private JPanel createSearchSortPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel controlPanel = new JPanel(new GridLayout(4, 2, 10, 10));
@@ -312,7 +317,6 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ── HELPER METHODS ──
     private void loadTable(ArrayList<Booking> list) {
         tableModel.setRowCount(0);
         for (Booking b : list) {
